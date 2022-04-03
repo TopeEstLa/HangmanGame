@@ -1,7 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
+from datetime import datetime
 
+import uuid
 import random
+
+from history import History
 
 game = ""
 level = ""
@@ -30,6 +34,7 @@ def load_game():
     global game, fail, max_fail, selected_word, guessed_letter, level
 
     selected_word = getWord()
+    print(selected_word)
     guessed_letter = []
     max_fail = 10
 
@@ -69,7 +74,7 @@ def choose_level():
 
     exitImage = PhotoImage(file='ressources/exit.png')
     exitButton = Button(root, bd=0, command=close, bg="#E7FFFF", activebackground="#E7FFFF", font=10, image=exitImage)
-    exitButton.place(x=770, y=10)
+    exitButton.place(x=500, y=500)
 
     def callback(*args):
         global level
@@ -107,6 +112,7 @@ def letter_guess():
                         guessed_letter.append(letter)
                         exec('d{}.config(text="{}")'.format(i, letter.upper()))
                 if len(guessed_letter) == len(selected_word):
+                    create_history(True)
                     answer = messagebox.askyesno('GAME FINIE', 'TU VIENT DE GAGNER \n REJOUER ?')
                     if answer == True:
                         game.destroy()
@@ -117,6 +123,7 @@ def letter_guess():
                 exec('c{}.place(x={},y={})'.format(fail + 1, 300, -50))
                 fail += 1
                 if fail == max_fail:
+                    create_history(False)
                     answer = messagebox.askyesno('GAME FINIE', 'TU A PERDUE :C !\n REJOUER ?')
                     if answer == True:
                         game.destroy()
@@ -127,6 +134,23 @@ def letter_guess():
     else:
         messagebox.showinfo("Game", "Vous devez entrer seulement une lettre")
 
+
+def create_history(hasWin):
+    global fail, level
+    now = datetime.now()
+    dt_string = now.strftime("%d-%m-%Y_%H:%M:%S")
+    game_uuid = uuid.uuid4()
+    history = History()
+    history.uuid = str(game_uuid)
+    history.date = dt_string
+    history.win = hasWin
+    history.fail = fail
+    history.level = level
+    history.word = selected_word
+
+    history_file = open("game_history/" + str(game_uuid) + ".json", 'w')
+    history_file.write(history.toJSON())
+    history_file.close()
 
 while run:
     choose_level()
