@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import pygame, os, random, sys
+import pygame, requests, os, random, sys
 
 from GameProfile import GameProfile
 from Game import Game
@@ -25,6 +25,7 @@ i_icon = images_dir + "icon.png"
 def reset():
     global profile, game
     profile.coins += game.coins_earned
+    requests.put('http://localhost:8080/user/update/' + profile.username, json=game.coins_earned)
     game = None
 
 
@@ -196,7 +197,7 @@ def next_option_main():
 
 def loadProfile(username):
     global profile
-    if username == "Anonyme":
+    if username == "anonyme":
         profile = GameProfile()
         profile.id = 0
         profile.username = username
@@ -209,15 +210,19 @@ def loadProfile(username):
         profile.gallows_equipped = "default"
     else:
         profile = GameProfile()
-        profile.id = 0
-        profile.username = username
-        profile.coins = 0
+        response = requests.get("http://localhost:8080/user/get/" + username);
 
-        profile.purchased_avatars = []
-        profile.purchased_gallows = []
+        json = response.json()
 
-        profile.avatar_equipped = "default"
-        profile.gallows_equipped = "default"
+        profile.id = json["id"]
+        profile.username = json["username"]
+        profile.coins = json["coins"]
+
+        profile.purchased_avatars = json["purchased_avatars"]
+        profile.purchased_gallows = json["purchased_gallows"]
+
+        profile.avatar_equipped = json["avatar_equipped"]
+        profile.gallows_equipped = json["gallows_equipped"]
 
 
 def setupGame(mode):
@@ -226,6 +231,7 @@ def setupGame(mode):
     game.mode = mode
     game.word = []
     game.word.append(get_random_word())
+    print(game.word)
     game.find_word = ""
     game.incorrect_letters = ""
     game.correct_letters = ""
