@@ -8,8 +8,9 @@ context = ""
 
 options_selected = "Normal"
 main_menu_options = ["Normal", "Time up", "While life", "Shop", "Lockers", "Quit"]
+main_menu_info = ["Jouez au jeux en mode normal", "Trouvez les mots dans le temps imparti", "Trouvez le plus de mots tant que vous n'avez pas perdu", "Achetez des nouveau skins", "Equippez vos skins", "Partir"]
 
-temp_username = "Anonyme"
+temp_username = "anonyme"
 profile = None
 game = None
 
@@ -43,7 +44,7 @@ def drawSecretWord(background, word, correct_letters):
         else:
             drawable_word += "_"
     draw_text(' '.join(drawable_word),
-              (255, 255, 255) if (game.over == False or game.won == True) else (255, 0, 0),
+              (255, 255, 255) if (game.over == False or game.gagné == True) else (255, 0, 0),
               (320, 220), background, font2)
 
 
@@ -69,27 +70,33 @@ def draw_screen():
 
     match context:
         case "login":
-            draw_text("Please login", (0, 0, 0), (0, 50), background, middst, True)
+            draw_text("Veuillez vous connecter", (0, 0, 0), (0, 50), background, middst, True)
             current_user_edit = temp_username + " "
             draw_text(current_user_edit, (2, 0, 0), (0, 220), background, monospace, True)
-            draw_text("Press enter to connect, leave blank if you don't want to connect", (60, 60, 60), (0, 430),
+            draw_text("Appuyez sur Entrée pour vous connecter,", (60, 60, 60), (0, 430),
                       background,
                       font2, True)
+            draw_text("laissez vide si vous ne souhaitez pas vous connecter", (60, 60, 60), (0, 450),
+                      background,
+                      font2, True)
+
         case "main-menu":
             draw_text("HangMan - Game", (0, 0, 0), (0, 20), background, middst, True)
-            draw_text(profile.username + "(" + str(profile.id) + ")", (0, 0, 0), (500, 80), background, font2, False)
+            draw_text(profile.username + " (" + str(profile.id) + ")", (0, 0, 0), (500, 80), background, font2, False)
             draw_text(str(profile.coins) + " coins", (0, 0, 0), (500, 100), background, font2, False)
+            draw_text(main_menu_info[main_menu_options.index(options_selected)], (255, 255, 255), (0, 135), background, font2, True)
             option_pos_y = 170
             for option in main_menu_options:
                 draw_text(option, (255, 255, 255), (50, option_pos_y), background, font2, True,
                           option == options_selected)
+
                 option_pos_y += 40
         case "playing-normal":
             drawSecretWord(background, game.word[0], game.correct_letters)
 
-            nn = "Won" if game.won else "Lost"
-            text = 'Pick a letter, try to guess the word...' if (
-                not game.over) else "You " + nn + " use return to show summary"
+            nn = "gagné" if game.gagné else "perdu"
+            text = 'Choisissez une lettre...' if (
+                not game.over) else "Tu a " + nn + " utilise retour"
             draw_text(text, (255, 255, 255), (320, 180), background, font2)
 
             draw_text(game.incorrect_letters, (0, 0, 0), (320, 260), background, font2)
@@ -97,9 +104,9 @@ def draw_screen():
         case "playing-while-life":
             drawSecretWord(background, game.word[len(game.word) - 1], game.correct_letters)
 
-            nn = "Won" if game.won else "Lost"
-            text = 'Pick a letter, try to guess the word...' if (
-                not game.over) else "You " + nn + " use return to show summary"
+            nn = "gagné" if game.gagné else "perdu"
+            text = 'Choisissez une lettre...' if (
+                not game.over) else "Tu a " + nn + " utilise retour"
             draw_text(text, (255, 255, 255), (320, 180), background, font2)
 
             draw_text(game.incorrect_letters, (0, 0, 0), (320, 260), background, font2)
@@ -109,11 +116,11 @@ def draw_screen():
         case "playing-time-up":
             drawSecretWord(background, game.word[len(game.word) - 1], game.correct_letters)
 
-            draw_text(str(max(int(timer), 0)) + " second remaining", (255, 255, 255), (320, 160), background, font2)
+            draw_text(str(max(int(timer), 0)) + " seconde restante", (255, 255, 255), (320, 160), background, font2)
 
-            nn = "Won" if game.won else "Lost"
-            text = 'Pick a letter, try to guess the word...' if (
-                not game.over) else "You " + nn + " use return to show summary"
+            nn = "gagné" if game.gagné else "perdu"
+            text = 'Choisissez une lettre...' if (
+                not game.over) else "Tu a " + nn + " utilise retour"
             draw_text(text, (255, 255, 255), (320, 180), background, font2)
 
             draw_text(game.incorrect_letters, (0, 0, 0), (320, 260), background, font2)
@@ -136,10 +143,10 @@ def displayGallows(background, state):
 
 
 def displaySummary(background):
-    draw_text("Game Summary", (0, 0, 0), (0, 20), background, middst, True)
+    draw_text("Résumé du jeu", (0, 0, 0), (0, 20), background, middst, True)
 
-    nn = "Won" if game.won else "Lost"
-    title_text = 'You ' + nn + '!'
+    nn = "gagné" if game.gagné else "perdu"
+    title_text = 'Tu ' + nn + '!'
     draw_text(title_text, (0, 0, 0), (0, 100), background, font2, True)
 
     pygame.draw.line(background, (0, 0, 0), (25, 150), (625, 150), 4)
@@ -147,26 +154,26 @@ def displaySummary(background):
     pygame.draw.line(background, (0, 0, 0), (25, 430), (625, 430), 4)
 
     if game.mode == "normal":
-        draw_text("Incorrect letter used : " + str(len(game.incorrect_letters)), (0, 0, 0), (25, 160),
+        draw_text("Mauvaise lettre utilisée : " + str(len(game.incorrect_letters)), (0, 0, 0), (25, 160),
                   background,
                   font2, True)
-        draw_text("Letter in word : " + str(len(game.word[0])), (0, 0, 0), (25, 260), background, font2, True)
-        draw_text("You trove the word: " + game.word[0], (0, 0, 0), (0, 400), background, font2, True)
+        draw_text("Bonne lettre : " + str(len(game.word[0])), (0, 0, 0), (25, 260), background, font2, True)
+        draw_text("Le mot est : " + game.word[0], (0, 0, 0), (0, 400), background, font2, True)
     elif game.mode == "while-life":
-        draw_text("You find words : " + str(len(game.word) - 1), (0, 0, 0), (25, 160), background, font2, True)
-        draw_text("You trove the words : " + game.find_word, (0, 0, 0), (0, 200), background, font2, True)
-        draw_text("You don't trove the word : " + game.word[len(game.word) - 1], (0, 0, 0), (0, 240), background,
+        draw_text("Vous avez trouver : " + str(len(game.word) - 1) + " mot(s)", (0, 0, 0), (25, 160), background, font2, True)
+        draw_text("Vous avez trouvé les mots : " + game.find_word, (0, 0, 0), (0, 200), background, font2, True)
+        draw_text("Vous n'avez pas trouvé le mot : " + game.word[len(game.word) - 1], (0, 0, 0), (0, 240), background,
                   font2, True)
     elif game.mode == "time-up":
-        draw_text("Incorrect letter used : " + str(len(game.incorrect_letters)), (0, 0, 0), (25, 160),
+        draw_text("Mauvaise lettre utilisée : " + str(len(game.incorrect_letters)), (0, 0, 0), (25, 160),
                   background,
                   font2, True)
-        draw_text("Time used to find : " + str(max(60 - int(timer), 0)), (0, 0, 0), (25, 180), background, font2, True)
-        draw_text("the word is : " + game.word[0], (0, 0, 0), (0, 200), background, font2, True)
+        draw_text("Temps utilisé pour trouver : " + str(max(60 - int(timer), 0)), (0, 0, 0), (25, 180), background, font2, True)
+        draw_text("Le mot est : " + game.word[0], (0, 0, 0), (0, 200), background, font2, True)
 
     draw_text("SCORE    :          " + str(game.score), (0, 0, 0), (25, 340), background, font2, True)
-    draw_text("COINS    :          " + str(game.coins_earned), (0, 0, 0), (25, 360), background, font2, True)
-    draw_text("If you want to replay Y else N", (0, 0, 0), (0, 450), background, font2, True)
+    draw_text("PIÈCES    :          " + str(game.coins_earned), (0, 0, 0), (25, 360), background, font2, True)
+    draw_text("Si vous voulez rejouer Y sinon N", (0, 0, 0), (0, 450), background, font2, True)
 
 
 def previous_option_main():
@@ -219,7 +226,6 @@ def setupGame(mode):
     game.mode = mode
     game.word = []
     game.word.append(get_random_word())
-    print(game.word)
     game.find_word = ""
     game.incorrect_letters = ""
     game.correct_letters = ""
@@ -227,7 +233,7 @@ def setupGame(mode):
     game.fail = 0
     game.coins_earned = 0
     game.over = False
-    game.won = False
+    game.gagné = False
 
 
 def calculate_score(mode):
@@ -239,7 +245,7 @@ def calculate_score(mode):
         game.score = max((len(game.word) * 2) - game.fail, 0)
         game.coins_earned = max((game.score * 10), 0)
     elif mode == "playing-time-up":
-        if game.won == True:
+        if game.gagné == True:
             game.score = max((len(game.word[0]) - len(game.incorrect_letters) * timer), 0)
             game.coins_earned = max((game.score * 10), 0)
 
@@ -262,21 +268,20 @@ def handleEventOnGame(event):
                             found_all_letters = False
                     if found_all_letters:
                         if not context == "playing-while-life":
-                            game.won = True
+                            game.gagné = True
                             game.over = True
                         else:
                             game.find_word = game.find_word + " " + secret_word
                             game.word.append(get_random_word())
-                            print(game.word)
                             game.correct_letters = ""
                             game.incorrect_letters = ""
-                            game.won = True
+                            game.gagné = True
             elif key_pressed not in incorrect_letters:
                 game.incorrect_letters = incorrect_letters + key_pressed
                 game.fail = game.fail + 1
                 if game.fail == 9:
                     game.over = True
-                    game.won = False
+                    game.gagné = False
                     timer = 0
     else:
         if event.key == pygame.K_RETURN:
@@ -308,7 +313,7 @@ while True:
             timer -= dt
         if timer <= 0:
             game.over = True
-            game.won = False
+            game.gagné = False
         dt = clock.tick(30) / 1000
 
     for event in pygame.event.get():
