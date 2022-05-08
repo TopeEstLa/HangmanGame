@@ -386,7 +386,7 @@ while True:
             game.gagné = False
         dt = clock.tick(30) / 1000
 
-    #When a key or anythings is fired he is add on event.get() 
+    #When a key or anythings is fired he is add on event.get()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit(0)
