@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import pygame, requests, os, random, sys
 
 from GameProfile import GameProfile
@@ -8,9 +7,9 @@ context = ""
 
 options_selected = "Normal"
 main_menu_options = ["Normal", "Time up", "While life", "Shop", "Lockers", "Quit"]
-main_menu_info = ["Jouez au jeux en mode normal", "Trouvez les mots dans le temps imparti",
-                  "Trouvez le plus de mots tant que vous n'avez pas perdu", "Achetez des nouveau skins",
-                  "Equippez vos skins", "Partir"]
+main_menu_info = ["Jouez au jeu en mode normal", "Trouvez les mots dans le temps imparti",
+                  "Trouvez le plus de mots tant que vous n'avez pas perdu", "Achetez des nouveaux skins",
+                  "Equipez vos skins", "Partir"]
 
 temp_username = "anonyme"
 profile = None
@@ -26,11 +25,12 @@ i_icon = images_dir + "icon.png"
 
 def reset():
     """
-    Reset the game object un sending, winned coin to the rest api
+    Reset the game object and sending winned coin to the rest api
     """
     global profile, game
     profile.coins += game.coins_earned
-    requests.put('http://82.125.146.198:8080/user/update/' + profile.username, json=game.coins_earned)
+    if profile.username != "anonyme":
+        requests.put('http://82.125.146.198:8080/user/update/' + profile.username, json=game.coins_earned)
     game = None
 
 
@@ -104,7 +104,7 @@ def draw_screen():
             draw_text("Appuyez sur Entrée pour vous connecter,", (60, 60, 60), (0, 430),
                       background,
                       font2, True)
-            draw_text("laissez vide si vous ne souhaitez pas vous connecter", (60, 60, 60), (0, 450),
+            draw_text("Laissez vide si vous ne souhaitez pas vous connecter", (60, 60, 60), (0, 450),
                       background,
                       font2, True)
 
@@ -135,7 +135,7 @@ def draw_screen():
 
             nn = "gagné" if game.gagné else "perdu"
             text = 'Choisissez une lettre...' if (
-                not game.over) else "Tu a " + nn + " utilise retour"
+                not game.over) else "Tu as " + nn + " utilise retour"
             draw_text(text, (255, 255, 255), (320, 180), background, font2)
 
             draw_text(game.incorrect_letters, (0, 0, 0), (320, 260), background, font2)
@@ -145,11 +145,11 @@ def draw_screen():
         case "playing-time-up":
             draw_secret_word(background, game.word[len(game.word) - 1], game.correct_letters)
 
-            draw_text(str(max(int(timer), 0)) + " seconde restante", (255, 255, 255), (320, 160), background, font2)
+            draw_text(str(max(int(timer), 0)) + " seconde(s) restante ", (255, 255, 255), (320, 160), background, font2)
 
             nn = "gagné" if game.gagné else "perdu"
             text = 'Choisissez une lettre...' if (
-                not game.over) else "Tu a " + nn + " utilise retour"
+                not game.over) else "Tu as " + nn + " utilise retour "
             draw_text(text, (255, 255, 255), (320, 180), background, font2)
 
             draw_text(game.incorrect_letters, (0, 0, 0), (320, 260), background, font2)
@@ -198,7 +198,7 @@ def display_summary(background):
         draw_text("Bonne lettre : " + str(len(game.word[0])), (0, 0, 0), (25, 260), background, font2, True)
         draw_text("Le mot est : " + game.word[0], (0, 0, 0), (0, 400), background, font2, True)
     elif game.mode == "while-life":
-        draw_text("Vous avez trouver : " + str(len(game.word) - 1) + " mot(s)", (0, 0, 0), (25, 160), background, font2,
+        draw_text("Vous avez trouvé : " + str(len(game.word) - 1) + " mot(s)", (0, 0, 0), (25, 160), background, font2,
                   True)
         draw_text("Vous avez trouvé les mots : " + game.find_word, (0, 0, 0), (0, 200), background, font2, True)
         draw_text("Vous n'avez pas trouvé le mot : " + game.word[len(game.word) - 1], (0, 0, 0), (0, 240), background,
@@ -213,7 +213,7 @@ def display_summary(background):
 
     draw_text("SCORE    :          " + str(game.score), (0, 0, 0), (25, 340), background, font2, True)
     draw_text("PIÈCES    :          " + str(game.coins_earned), (0, 0, 0), (25, 360), background, font2, True)
-    draw_text("Si vous voulez rejouer Y sinon N", (0, 0, 0), (0, 450), background, font2, True)
+    draw_text("Si vous voulez rejouer tapez Y sinon N", (0, 0, 0), (0, 450), background, font2, True)
 
 
 def previous_option_main():
