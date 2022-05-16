@@ -30,7 +30,7 @@ def reset():
     global profile, game
     profile.coins += game.coins_earned
     if profile.username != "anonyme":
-        requests.put('http://82.125.146.198:8080/user/update/' + profile.username, json=game.coins_earned)
+        requests.put('http://164.92.232.27:8080/user/update/' + profile.username, json=game.coins_earned) #164.92.232.27 Ip of the DigitalOcean droplet
     game = None
 
 
@@ -259,7 +259,7 @@ def load_profile(username):
         profile.gallows_equipped = "default"
     else:
         profile = GameProfile()
-        response = requests.get("http://82.125.146.198:8080/user/get/" + username);
+        response = requests.get("http://164.92.232.27:8080/user/get/" + username); #164.92.232.27 the ip of the DigitalOcean Droplet
 
         json = response.json()
 
